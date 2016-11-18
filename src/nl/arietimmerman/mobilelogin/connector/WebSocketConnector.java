@@ -4,12 +4,6 @@
 
 package nl.arietimmerman.mobilelogin.connector;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.websocket.EncodeException;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
@@ -19,10 +13,11 @@ import javax.websocket.server.ServerEndpoint;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.owlike.genson.GensonBuilder;
+
 import nl.arietimmerman.mobilelogin.Message;
 import nl.arietimmerman.mobilelogin.Store;
 import nl.arietimmerman.mobilelogin.WebSocketMessage;
-import nl.arietimmerman.mobilelogin.client.Client;
 import nl.arietimmerman.mobilelogin.client.WebSocketClient;
 import nl.arietimmerman.mobilelogin.websocket.Decoder;
 import nl.arietimmerman.mobilelogin.websocket.Encoder;
@@ -35,13 +30,14 @@ public class WebSocketConnector extends Connector{
 	@OnOpen
 	public void onOpen(Session session) {
 		
+		logger.trace("Open new session");
+		
 		WebSocketClient client = new WebSocketClient(session);
 		Store.addClient(client);
-				
-		session.getUserProperties().put("client", client.getAddress());
-				
-		//TODO: reply with the replyToIdentifier and secret
+		
+		//Send the client its own information
 		client.sendObject(client);
+		
 	}
 	
 	/**
@@ -53,7 +49,11 @@ public class WebSocketConnector extends Connector{
 	 * @param msg
 	 */
 	@OnMessage
-	public void message(Session session, WebSocketMessage webSocketMessage) {
+	public void message(Session session, String msg) {
+		
+		WebSocketMessage webSocketMessage = new GensonBuilder().create().deserialize(msg, WebSocketMessage.class);
+		
+		logger.trace(String.format("Received message with action %s",webSocketMessage.action));
 		
 		if("readOutbox".equals(webSocketMessage.action)){
 			
@@ -65,8 +65,6 @@ public class WebSocketConnector extends Connector{
 				e.printStackTrace();
 			}
 			
-			//webSocketMessage.address;
-			
 		}else if("readInbox".equals(webSocketMessage.action)){
 			
 			try {
@@ -77,13 +75,15 @@ public class WebSocketConnector extends Connector{
 				e.printStackTrace();
 			}
 			
-		}else if("post".equals(webSocketMessage.action)){
+		}else if("postToInbox".equals(webSocketMessage.action)){
 			
-			if(webSocketMessage.secret == null){
-				super.post(webSocketMessage.address, webSocketMessage.message);
-			}else{
-				super.post(webSocketMessage.address, webSocketMessage.secret, webSocketMessage.message);
-			}
+			logger.trace("post message to other");
+			super.post(webSocketMessage.address, webSocketMessage.message);
+			
+		}else if("postToOutbox".equals(webSocketMessage.action)){
+			
+			logger.trace("post message to own outbox");
+			super.post(webSocketMessage.address, webSocketMessage.secret, webSocketMessage.message);
 			
 		}
 		

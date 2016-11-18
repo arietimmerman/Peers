@@ -1,15 +1,12 @@
 package nl.arietimmerman.mobilelogin;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import nl.arietimmerman.mobilelogin.client.Client;
-import nl.arietimmerman.mobilelogin.connector.WebSocketConnector;
 
 public class Store {
 

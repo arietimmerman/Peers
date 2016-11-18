@@ -1,10 +1,17 @@
 /**
  * Send and receive messages with REST
+ * 
+ * Everyone can read messages from everyone's outbox
+ * Everyone can post messages to everyone's inbox
+ * 
+ * Only if you know the "secret" you can read messages from someone's inbox
+ * Only if you know the "secret" you can post messages to your outbox
+ * 
  */
 
 package nl.arietimmerman.mobilelogin.connector;
 
-import javax.ws.rs.FormParam;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -20,6 +27,8 @@ import nl.arietimmerman.mobilelogin.client.RestClient;
 
 
 @Path("/message")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class RestConnector extends Connector {
 	
 	/**
@@ -28,7 +37,6 @@ public class RestConnector extends Connector {
 	 */
 	@GET
 	@Path("start")
-	@Produces(MediaType.APPLICATION_JSON)
 	public Client start(){
 		
 		Client client = new RestClient();
@@ -45,7 +53,6 @@ public class RestConnector extends Connector {
 	 */
 	@GET
 	@Path("readOutbox/{address}")
-	@Produces(MediaType.APPLICATION_JSON)
 	public Message readOutbox(@PathParam("address") String address){
 		
 		return super.readOutbox(address);
@@ -54,12 +61,8 @@ public class RestConnector extends Connector {
 	
 	@GET
 	@Path("readInbox/{address}/{secret}")
-	@Produces(MediaType.APPLICATION_JSON)
 	public Message readInbox(@PathParam("address") String address, @PathParam("secret") String secret) throws Exception{
-		
 		return super.readInbox(address, secret);
-		
-		
 	}
 	
 	/**
@@ -68,9 +71,9 @@ public class RestConnector extends Connector {
 	 * @return
 	 */
 	@POST
-	@Path("post/{address}")
+	@Path("postToInbox/{address}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Status post(@PathParam("address") String address, @FormParam("message") Message message){
+	public Status postToInbox(@PathParam("address") String address, Message message){
 		
 		return super.post(address, message);
 		
@@ -82,9 +85,9 @@ public class RestConnector extends Connector {
 	 * @return
 	 */
 	@POST
-	@Path("post/{address}/{secret}")
+	@Path("postToOutbox/{address}/{secret}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Status post(@PathParam("address") String address, @PathParam("secret") String secret, @FormParam("message") Message message){
+	public Status postToOutbox(@PathParam("address") String address, @PathParam("secret") String secret, Message message){
 		
 		return super.post(address, secret, message);
 		

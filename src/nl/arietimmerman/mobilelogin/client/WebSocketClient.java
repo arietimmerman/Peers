@@ -17,6 +17,9 @@ public class WebSocketClient extends Client {
 	
 	@Override
 	public void addToInbox(Message message) {
+		
+		
+		
 		sendObject(message);
 	}
 	

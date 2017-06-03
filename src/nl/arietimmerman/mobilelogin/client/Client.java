@@ -1,12 +1,10 @@
 package nl.arietimmerman.mobilelogin.client;
 
 import java.security.SecureRandom;
-import java.util.HashMap;
+import java.util.Base64;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Queue;
 
-import org.apache.tomcat.util.codec.binary.Base64;
 
 import com.owlike.genson.annotation.JsonIgnore;
 
@@ -14,9 +12,9 @@ import nl.arietimmerman.mobilelogin.Message;
 
 abstract public class Client {
 	
-	private String secret = Base64.encodeBase64URLSafeString(generateId());
+	private String secret = Base64.getUrlEncoder().encodeToString(generateId());
 	
-	private String address = Base64.encodeBase64URLSafeString(generateId());
+	private String address = Base64.getUrlEncoder().encodeToString(generateId());
 	
 	private Queue<Message> inbox = new LinkedList<>();
 	

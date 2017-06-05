@@ -1,7 +1,10 @@
 package nl.arietimmerman.mobilelogin;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,10 +24,16 @@ public class Store {
 		store.put(client.getAddress(), client);
 	}
 	
+	public static Client removeClient(String address){
+		return store.remove(address);
+	}
+	
 	public static Client getClient(String address){
 		return store.get(address);
 	}
 	
-	
+	public static List<Client> getClients(){
+		return new ArrayList<>(store.values());
+	}
 	
 }

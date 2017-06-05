@@ -12,6 +12,8 @@ import nl.arietimmerman.mobilelogin.Message;
 
 abstract public class Client {
 	
+	public final static String ADDRESS = "address";
+	
 	private String secret = Base64.getUrlEncoder().encodeToString(generateId());
 	
 	private String address = Base64.getUrlEncoder().encodeToString(generateId());
@@ -32,7 +34,7 @@ abstract public class Client {
 		return address;
 	}
 
-	public void addToInbox(Message message) {
+	public void addToInbox(Message message) throws ClientException {
 		this.inbox.add(message);
 	}
 
@@ -56,4 +58,18 @@ abstract public class Client {
 		return s;
 	}
 
+	public class ClientException extends Exception{
+
+		private static final long serialVersionUID = -2934526822613038366L;
+		
+		public ClientException(String message) {
+			super(message);
+		}
+		
+		public ClientException(Exception e) {
+			super(e);
+		}
+		
+	}
+	
 }

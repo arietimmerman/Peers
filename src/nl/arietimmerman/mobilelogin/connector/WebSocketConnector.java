@@ -4,6 +4,13 @@
 
 package nl.arietimmerman.mobilelogin.connector;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.websocket.EncodeException;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
@@ -14,10 +21,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.owlike.genson.GensonBuilder;
+import com.owlike.genson.JsonBindingException;
 
 import nl.arietimmerman.mobilelogin.Message;
 import nl.arietimmerman.mobilelogin.Store;
 import nl.arietimmerman.mobilelogin.WebSocketMessage;
+import nl.arietimmerman.mobilelogin.client.Client.ClientException;
+import nl.arietimmerman.mobilelogin.client.Client;
 import nl.arietimmerman.mobilelogin.client.WebSocketClient;
 import nl.arietimmerman.mobilelogin.websocket.Decoder;
 import nl.arietimmerman.mobilelogin.websocket.Encoder;
@@ -27,6 +37,8 @@ public class WebSocketConnector extends Connector{
 	
 	private static final Logger logger = LogManager.getLogger(WebSocketConnector.class);
 	
+	Map<String,List<String>> subscribedToOutbox = new HashMap<>();
+	
 	@OnOpen
 	public void onOpen(Session session) {
 		
@@ -35,8 +47,15 @@ public class WebSocketConnector extends Connector{
 		WebSocketClient client = new WebSocketClient(session);
 		Store.addClient(client);
 		
+		session.getUserProperties().put(Client.ADDRESS, client.getAddress());
+		
 		//Send the client its own information
-		client.sendObject(client);
+		try {
+			client.sendObject(client);
+		} catch (ClientException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 	
@@ -51,9 +70,14 @@ public class WebSocketConnector extends Connector{
 	@OnMessage
 	public void message(Session session, String msg) {
 		
+		
+		try{
 		WebSocketMessage webSocketMessage = new GensonBuilder().create().deserialize(msg, WebSocketMessage.class);
 		
+		
 		logger.trace(String.format("Received message with action %s",webSocketMessage.action));
+		
+		// subscribeToOutbox (address)"
 		
 		if("readOutbox".equals(webSocketMessage.action)){
 			
@@ -84,6 +108,33 @@ public class WebSocketConnector extends Connector{
 			
 			logger.trace("post message to own outbox");
 			super.post(webSocketMessage.address, webSocketMessage.secret, webSocketMessage.message);
+			
+			//TODO: loop over clients subscribed to webSocketMessage.address
+				// super.post(webSocketMessage.address, webSocketMessage.message);
+		
+		}else if("broadcast".equals(webSocketMessage.action)){
+			
+			super.post(webSocketMessage.message);
+			
+		}else if("ping".equals(webSocketMessage.action)){
+			
+			try {
+				Message message = new Message();
+				message.setContent("pong");
+				
+				session.getBasicRemote().sendObject(message);
+				
+			} catch (IOException | EncodeException e) {
+				
+			}
+				
+		}else{
+			
+			logger.trace("Ignore message");
+			
+		}
+		
+		}catch(JsonBindingException e){
 			
 		}
 		

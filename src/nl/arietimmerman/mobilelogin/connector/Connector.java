@@ -1,5 +1,8 @@
 package nl.arietimmerman.mobilelogin.connector;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.ws.rs.PathParam;
 
 import org.apache.logging.log4j.LogManager;
@@ -9,10 +12,34 @@ import nl.arietimmerman.mobilelogin.Message;
 import nl.arietimmerman.mobilelogin.Status;
 import nl.arietimmerman.mobilelogin.Store;
 import nl.arietimmerman.mobilelogin.client.Client;
+import nl.arietimmerman.mobilelogin.client.Client.ClientException;
 
 abstract public class Connector {
 
 	private static final Logger logger = LogManager.getLogger(Connector.class);
+	
+	public Status post(Message message){
+		
+		List<String> toBeRemoved = new ArrayList<>();
+		
+		for(Client client : Store.getClients()){
+			
+			logger.trace("Send message to client: " + client.getAddress());
+			
+			try {
+				client.addToInbox(message);
+			} catch (ClientException e) {
+				toBeRemoved.add(client.getAddress());
+			}
+		}
+		
+		for(String address : toBeRemoved){
+			Store.removeClient(address);
+		}
+		
+		return new Status();
+		
+	}
 	
 	public Status post(String address, Message message){
 		
@@ -22,7 +49,13 @@ abstract public class Connector {
 			
 			logger.trace("Add to inbox");
 			
-			client.addToInbox(message);
+			try {
+				client.addToInbox(message);
+			} catch (ClientException e) {
+				
+				Store.removeClient(address);
+				
+			}
 		}else{
 			
 			logger.trace(String.format("Could not find client with address %s",address));

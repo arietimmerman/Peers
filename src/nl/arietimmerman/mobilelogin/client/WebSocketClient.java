@@ -16,14 +16,11 @@ public class WebSocketClient extends Client {
 	}
 	
 	@Override
-	public void addToInbox(Message message) {
-		
-		
-		
+	public void addToInbox(Message message) throws ClientException {
 		sendObject(message);
 	}
 	
-	public void sendObject(Object object){
+	public void sendObject(Object object) throws ClientException{
 		try {
 			session.getBasicRemote().sendObject(object);
 		} catch (IOException e) {
@@ -32,6 +29,10 @@ public class WebSocketClient extends Client {
 		} catch (EncodeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (IllegalStateException e){
+			
+			throw new Client.ClientException(e);
+			
 		}
 	}
 	

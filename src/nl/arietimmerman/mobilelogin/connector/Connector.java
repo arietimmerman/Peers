@@ -2,6 +2,7 @@ package nl.arietimmerman.mobilelogin.connector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.PathParam;
 
@@ -96,6 +97,31 @@ abstract public class Connector {
 		}
 		
 		return new Status();
+	}
+
+	public Status postToTag(String tag, Message message) {
+		
+		List<Client> clients = Store.getClients().stream().filter(c -> tag != null && tag.equals(c.getTag())).collect(Collectors.toList());
+		
+		List<String> toBeRemoved = new ArrayList<>();
+		
+		for(Client client : clients){
+			
+			logger.trace("Send message to client: " + client.getAddress());
+			
+			try {
+				client.addToInbox(message);
+			} catch (ClientException e) {
+				toBeRemoved.add(client.getAddress());
+			}
+		}
+		
+		for(String address : toBeRemoved){
+			Store.removeClient(address);
+		}
+		
+		return new Status();
+		
 	}
 	
 }

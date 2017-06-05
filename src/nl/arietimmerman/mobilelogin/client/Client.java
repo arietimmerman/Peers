@@ -14,9 +14,12 @@ abstract public class Client {
 	
 	public final static String ADDRESS = "address";
 	
-	private String secret = Base64.getUrlEncoder().encodeToString(generateId());
+	private final String secret = Base64.getUrlEncoder().encodeToString(generateId());
 	
-	private String address = Base64.getUrlEncoder().encodeToString(generateId());
+	private final String address = Base64.getUrlEncoder().encodeToString(generateId());
+	
+	private Boolean isPublic = false;
+	private String tag = null;
 	
 	private Queue<Message> inbox = new LinkedList<>();
 	
@@ -72,4 +75,19 @@ abstract public class Client {
 		
 	}
 	
+	public void setIsPublic(Boolean isPublic) {
+		this.isPublic = isPublic;
+	}
+	
+	public Boolean getIsPublic() {
+		return isPublic;
+	}
+	
+	public void setTag(String tag) {
+		this.tag = tag;
+	}
+	
+	public String getTag() {
+		return tag;
+	}
 }

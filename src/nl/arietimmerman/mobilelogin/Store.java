@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,6 +34,10 @@ public class Store {
 	
 	public static List<Client> getClients(){
 		return new ArrayList<>(store.values());
+	}
+	
+	public static List<Client> getPublicClients(){
+		return getClients().stream().filter(c -> c.getIsPublic()).collect(Collectors.toList());
 	}
 	
 }

@@ -54,7 +54,8 @@ abstract public class Connector {
 				client.addToInbox(message);
 			} catch (ClientException e) {
 				
-				Store.removeClient(address);
+				logger.error("Failed while sending to: " + client.getAddress());
+//				Store.removeClient(address);
 				
 			}
 		}else{
@@ -112,7 +113,9 @@ abstract public class Connector {
 			try {
 				client.addToInbox(message);
 			} catch (ClientException e) {
-				toBeRemoved.add(client.getAddress());
+				
+				logger.error("Failed while sending to: " + client.getAddress());
+				//toBeRemoved.add(client.getAddress());
 			}
 		}
 		
